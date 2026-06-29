@@ -61,10 +61,10 @@ async def handle_sse(request: Request):
     async with sse_transport.connect_sse(request.scope, request.receive, request._send) as streams:
         await server.run(streams[0], streams[1], server.create_initialization_options())
 
-async def handle_messages(request: Request):
-    await sse_transport.handle_post_message(request.scope, request.receive, request._send)
-
-app = Starlette(routes=[Route("/sse", endpoint=handle_sse), Mount("/messages/", app=handle_messages)])
+app = Starlette(routes=[
+    Route("/sse", endpoint=handle_sse),
+    Mount("/messages/", app=sse_transport.handle_post_message),
+])
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
